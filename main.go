@@ -9,7 +9,6 @@ import (
 
 var router = mux.NewRouter()
 
-
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<h1>Home</h1>")
 	fmt.Fprint(w, "请求路径："+r.URL.Path)
@@ -44,7 +43,7 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
     <title>创建文章 —— 我的技术博客</title>
 </head>
 <body>
-    <form action="%s" method="post">
+    <form action="%s?test=test" method="post">
         <p><input type="text" name="title"></p>
         <p><textarea name="body" cols="30" rows="10"></textarea></p>
         <p><button type="submit">提交</button></p>
@@ -56,7 +55,12 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "create new article")
+
+	fmt.Fprintf(w, "r.Form title value: %v <br>", r.FormValue("title"))
+	fmt.Fprintf(w, "r.PostFormValue title value: %v <br>", r.PostFormValue("title"))
+
+	fmt.Fprintf(w, "r.Form test value: %v <br>", r.FormValue("test"))
+	fmt.Fprintf(w, "r.PostFormValue test value: %v <br>", r.PostFormValue("test"))
 }
 
 func forceHTMLMiddleware(next http.Handler) http.Handler {
