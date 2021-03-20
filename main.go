@@ -7,19 +7,16 @@ import (
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-type", "text/html;charset=utf-8")
 	fmt.Fprint(w, "<h1>Home</h1>")
 	fmt.Fprint(w, "请求路径："+r.URL.Path)
 }
 
 func AboutHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-type", "text/html;charset=utf-8")
 	fmt.Fprint(w, "<h1>About</h1>")
 	fmt.Fprint(w, "请求路径："+r.URL.Path)
 }
 
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html;charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
 	fmt.Fprint(w, "Not Found")
 }
@@ -39,6 +36,16 @@ func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "create new article")
 }
 
+func forceHTMLMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//设置header头
+		w.Header().Set("Content-Type","text/html;charset=utf-8")
+
+		//继续处理请求
+		next.ServeHTTP(w,r)
+	})
+}
+
 func main() {
 	router := mux.NewRouter()
 
@@ -50,6 +57,9 @@ func main() {
 
 	//自定义404页面
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
+
+	//中间件：强制内容类型为html
+	router.Use(forceHTMLMiddleware)
 
 	homeURL, _ := router.Get("home").URL()
 	fmt.Println("homeURL:", homeURL)
