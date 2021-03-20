@@ -2,20 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
-	"strings"
 )
 
-func DefaultHandler(w http.ResponseWriter, r *http.Request) {
+func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "text/html;charset=utf-8")
-	if r.URL.Path == "/" {
-		fmt.Fprint(w, "<h1>hello</h1>")
-		fmt.Fprint(w, "请求路径："+r.URL.Path)
-	} else {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprint(w, "<h1>not fund</h1>")
-		fmt.Fprint(w, "请求路径："+r.URL.Path)
-	}
+	fmt.Fprint(w, "<h1>Home</h1>")
+	fmt.Fprint(w, "请求路径："+r.URL.Path)
 }
 
 func AboutHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,22 +18,43 @@ func AboutHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "请求路径："+r.URL.Path)
 }
 
-func main() {
-	router := http.NewServeMux()
+func notFoundHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html;charset=utf-8")
+	w.WriteHeader(http.StatusNotFound)
+	fmt.Fprint(w, "Not Found")
+}
 
-	router.HandleFunc("/", DefaultHandler)
-	router.HandleFunc("/about", AboutHandler)
-	router.HandleFunc("/articles/", func(writer http.ResponseWriter, request *http.Request) {
-		id := strings.SplitN(request.URL.Path, "/", 3)[2]
-		fmt.Fprint(writer, "文章 ID："+id)
-	})
-	router.HandleFunc("/articles", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case "GET":
-			fmt.Fprint(w,"GET访问文章列表")
-		case "POST":
-			fmt.Fprint(w,"POST创建新文章")
-		}
-	})
+func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
+	//将 URL 路径参数解析为键值对应的 Map
+	vars := mux.Vars(r)
+	id := vars["id"]
+	fmt.Fprint(w, "文章ID:"+id)
+}
+
+func articlesIndexHandle(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "index Page")
+}
+
+func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "create new article")
+}
+
+func main() {
+	router := mux.NewRouter()
+
+	router.HandleFunc("/", HomeHandler).Methods("GET").Name("home")
+	router.HandleFunc("/about", AboutHandler).Methods("GET").Name("about")
+	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
+	router.HandleFunc("/articles", articlesIndexHandle).Methods("GET").Name("articles.index")
+	router.HandleFunc("/articles", articlesStoreHandler).Methods("POST").Name("articles.store")
+
+	//自定义404页面
+	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
+
+	homeURL, _ := router.Get("home").URL()
+	fmt.Println("homeURL:", homeURL)
+	articleURL, _ := router.Get("articles.show").URL("id","1")
+	fmt.Println("articleURL:", articleURL)
+
 	http.ListenAndServe(":3000", router)
 }
