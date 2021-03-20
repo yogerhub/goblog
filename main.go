@@ -14,6 +14,7 @@ func handlerFunc(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "<h1>about</h1>")
 		fmt.Fprint(w, "请求路径："+r.URL.Path)
 	}else {
+		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(w, "<h1>not fund</h1>")
 		fmt.Fprint(w, "请求路径："+r.URL.Path)
 	}
