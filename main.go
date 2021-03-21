@@ -20,16 +20,16 @@ var db *sql.DB
 func initDB() {
 	var err error
 	config := mysql.Config{
-		User: "root",
-		Passwd: "joydata",
-		Addr: "10.211.55.6:3306",
-		Net:"tcp",
-		DBName: "goblog",
+		User:                 "root",
+		Passwd:               "joydata",
+		Addr:                 "10.211.55.6:3306",
+		Net:                  "tcp",
+		DBName:               "goblog",
 		AllowNativePasswords: true,
 	}
 
 	// 准备数据库连接池
-	db,err = sql.Open("mysql",config.FormatDSN())
+	db, err = sql.Open("mysql", config.FormatDSN())
 	checkError(err)
 
 	// 设置最大连接数
@@ -37,7 +37,7 @@ func initDB() {
 	// 设置最大空闲连接数
 	db.SetMaxIdleConns(25)
 	// 设置每个链接的过期时间
-	db.SetConnMaxLifetime(5*time.Minute)
+	db.SetConnMaxLifetime(5 * time.Minute)
 
 	err = db.Ping()
 	checkError(err)
@@ -48,6 +48,17 @@ func checkError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func createTables() {
+	createAritclesSQL := `CREATE TABLE IF NOT EXISTS articles(
+    id bigint(20) PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    title varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    body longtext COLLATE utf8mb4_unicode_ci
+); `
+
+	_, err := db.Exec(createAritclesSQL)
+	checkError(err)
 }
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -79,17 +90,17 @@ func articlesIndexHandle(w http.ResponseWriter, r *http.Request) {
 func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 	storeURL, _ := router.Get("articles.store").URL()
 	data := ArticlesFormData{
-		Title: "",
-		Body: "",
-		URL: storeURL,
+		Title:  "",
+		Body:   "",
+		URL:    storeURL,
 		Errors: nil,
 	}
-	tmpl,err := template.ParseFiles("resources/views/articles/create.tmpl")
+	tmpl, err := template.ParseFiles("resources/views/articles/create.tmpl")
 	if err != nil {
 		panic(err)
 	}
 
-	tmpl.Execute(w,data)
+	tmpl.Execute(w, data)
 }
 
 type ArticlesFormData struct {
@@ -126,15 +137,15 @@ func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "body的值为：%v <br>", body)
 		fmt.Fprintf(w, "body的长度为：%v <br>", len(body))
 	} else {
-		storeURL,_ := router.Get("articles.store").URL()
+		storeURL, _ := router.Get("articles.store").URL()
 		data := ArticlesFormData{
-			Title: title,
-			Body: body,
-			URL: storeURL,
+			Title:  title,
+			Body:   body,
+			URL:    storeURL,
 			Errors: errors,
 		}
-		tmpl,err :=template.ParseFiles("resources/views/articles/create.tmpl")
-		if err !=nil{
+		tmpl, err := template.ParseFiles("resources/views/articles/create.tmpl")
+		if err != nil {
 			panic(err)
 		}
 
@@ -164,6 +175,7 @@ func removeTrailingSlash(next http.Handler) http.Handler {
 
 func main() {
 	initDB()
+	createTables()
 	router.HandleFunc("/", HomeHandler).Methods("GET").Name("home")
 	router.HandleFunc("/about", AboutHandler).Methods("GET").Name("about")
 	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
