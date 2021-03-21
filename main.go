@@ -109,7 +109,24 @@ func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesIndexHandle(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "index Page")
+	rows, err := db.Query("SELECT * FROM articles")
+	checkError(err)
+	defer rows.Close()
+
+	var articles []Article
+	for rows.Next() {
+		var article Article
+		err := rows.Scan(&article.ID, &article.Title, &article.Body)
+		checkError(err)
+		articles = append(articles, article)
+	}
+	err = rows.Err()
+	checkError(err)
+
+	tmpl, err := template.ParseFiles("resources/views/articles/index.tmpl")
+	checkError(err)
+	tmpl.Execute(w, articles)
+
 }
 
 func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
@@ -139,7 +156,7 @@ func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.PostFormValue("title")
 	body := r.PostFormValue("body")
 
-	errors := validateArticleFormData(title,body)
+	errors := validateArticleFormData(title, body)
 
 	//检查是否错误
 	if len(errors) == 0 {
@@ -217,7 +234,7 @@ func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		title := r.PostFormValue("title")
 		body := r.PostFormValue("body")
 
-		errors := validateArticleFormData(title,body)
+		errors := validateArticleFormData(title, body)
 
 		if len(errors) == 0 {
 			query := "UPDATE articles SET title = ?, body = ? WHERE id = ?"
@@ -332,6 +349,15 @@ func saveArticleToDB(title string, body string) (int64, error) {
 
 	return 0, err
 
+}
+
+func (a Article)Link()string  {
+	showURL,err := router.Get("articles.show").URL("id",strconv.FormatInt(a.ID,10))
+	if err != nil {
+		checkError(err)
+		return ""
+	}
+	return showURL.String()
 }
 
 func main() {
