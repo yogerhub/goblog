@@ -3,9 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"goblog/database"
 	"goblog/logger"
 	"goblog/pkg/route"
 	"goblog/types"
@@ -14,7 +14,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 	"unicode/utf8"
 )
 
@@ -24,44 +23,6 @@ var db *sql.DB
 type Article struct {
 	Title, Body string
 	ID          int64
-}
-
-func initDB() {
-	var err error
-	config := mysql.Config{
-		User:                 "root",
-		Passwd:               "joydata",
-		Addr:                 "10.211.55.6:3306",
-		Net:                  "tcp",
-		DBName:               "goblog",
-		AllowNativePasswords: true,
-	}
-
-	// 准备数据库连接池
-	db, err = sql.Open("mysql", config.FormatDSN())
-	logger.LogError(err)
-
-	// 设置最大连接数
-	db.SetMaxOpenConns(25)
-	// 设置最大空闲连接数
-	db.SetMaxIdleConns(25)
-	// 设置每个链接的过期时间
-	db.SetConnMaxLifetime(5 * time.Minute)
-
-	err = db.Ping()
-	logger.LogError(err)
-
-}
-
-func createTables() {
-	createAritclesSQL := `CREATE TABLE IF NOT EXISTS articles(
-    id bigint(20) PRIMARY KEY AUTO_INCREMENT NOT NULL,
-    title varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-    body longtext COLLATE utf8mb4_unicode_ci
-); `
-
-	_, err := db.Exec(createAritclesSQL)
-	logger.LogError(err)
 }
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -406,10 +367,12 @@ func (a Article) Delete() (rowsAffected int64, err error) {
 }
 
 func main() {
-	initDB()
-	createTables()
+	database.Initialize()
+	db = database.DB
+
 	route.Initialize()
 	router = route.Router
+
 	router.HandleFunc("/", HomeHandler).Methods("GET").Name("home")
 	router.HandleFunc("/about", AboutHandler).Methods("GET").Name("about")
 	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
