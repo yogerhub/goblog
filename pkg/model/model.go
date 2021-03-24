@@ -22,4 +22,5 @@ func ConnectDB() *gorm.DB  {
 
 	logger.LogError(err)
 
+	return DB
 }
