@@ -2,6 +2,7 @@ package article
 
 import (
 	"fmt"
+	"goblog/pkg/logger"
 	"goblog/pkg/model"
 	"goblog/pkg/types"
 )
@@ -27,4 +28,15 @@ func GetAll() ([]Article, error) {
 	fmt.Println("文章数据：", articles)
 
 	return articles, nil
+}
+
+// Create 创建文章，通过 article.ID 来判断是否创建成功
+func (article *Article) Create() (err error) {
+	result := model.DB.Create(&article)
+	if err = result.Error; err != nil {
+		logger.LogError(err)
+		return err
+	}
+	return nil
+
 }
