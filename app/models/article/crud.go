@@ -1,6 +1,7 @@
 package article
 
 import (
+	"fmt"
 	"goblog/pkg/model"
 	"goblog/pkg/types"
 )
@@ -15,4 +16,15 @@ func Get(idstr string) (Article, error) {
 	}
 	return article, nil
 
+}
+
+// GetAll 获取全部文章
+func GetAll() ([]Article, error) {
+	var articles []Article
+	if err := model.DB.Find(&articles).Error; err != nil {
+		return articles, err
+	}
+	fmt.Println("文章数据：", articles)
+
+	return articles, nil
 }
