@@ -43,14 +43,24 @@ func (*ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// 4. 读取成功，显示文章
-		tmpl, err := template.New("show.tmpl").
-			Funcs(template.FuncMap{
-				"RouteName2URL": route.Name2URL,
-				"Int64ToString": types.Int64ToString,
-			}).
-			ParseFiles("resources/views/articles/show.tmpl")
+
+		// 4.0 设置模板相对路径
+		viewDir := "resources/views"
+		// 4.1 所有布局模板文件 Slice
+		files, err := filepath.Glob(viewDir + "/layouts/*.tmpl")
 		logger.LogError(err)
-		tmpl.Execute(w, article)
+		// 4.2 在 Slice 里新增我们的目标文件
+		newFiles := append(files, viewDir+"/articles/show.tmpl")
+		// 4.3 解析模板文件
+		tmpl, err := template.New("show.tmpl").Funcs(template.FuncMap{
+			"RouteName2URL": route.Name2URL,
+			"Int64ToString": types.Int64ToString,
+		}).ParseFiles(newFiles...)
+
+		logger.LogError(err)
+		// 4.4 渲染模板，将所有文章的数据传输进去
+		tmpl.ExecuteTemplate(w, "app", article)
+
 	}
 }
 
