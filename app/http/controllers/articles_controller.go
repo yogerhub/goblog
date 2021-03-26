@@ -195,16 +195,16 @@ func (*ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
 			_article.Body = body
 			rowsAffected, err := _article.Update()
 
-			if err !=nil {
+			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
-				fmt.Fprint(w,"500 服务器内部错误")
+				fmt.Fprint(w, "500 服务器内部错误")
 				return
 			}
 
 			// √ 更新成功，跳转到文章详情页
 			if rowsAffected > 0 {
-				showURL := route.Name2URL("articles.show","id",id)
-				http.Redirect(w,r,showURL,http.StatusFound)
+				showURL := route.Name2URL("articles.show", "id", id)
+				http.Redirect(w, r, showURL, http.StatusFound)
 			} else {
 				fmt.Fprint(w, "您没有做任何更改")
 			}
@@ -212,7 +212,7 @@ func (*ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
 		} else {
 
 			// 4.3 表单验证不通过，显示理由
-			storeURL := route.Name2URL("articles.update","id",id)
+			storeURL := route.Name2URL("articles.update", "id", id)
 			data := ArticlesController{
 				Title:  title,
 				Body:   body,
@@ -226,6 +226,48 @@ func (*ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
 
 	}
 
+}
+
+func (*ArticlesController) Delete(w http.ResponseWriter, r *http.Request) {
+	// 1. 获取 URL 参数
+	id := route.GetRouteVariable("id", r)
+
+	// 2. 读取对应的文章数据
+	_article, err := article.Get(id)
+
+	// 3. 如果出现错误
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// 3.1 数据未找到
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, "404 文章未找到")
+		} else {
+			// 3.2 数据库错误
+			logger.LogError(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, "500 服务器内部错误")
+		}
+	} else {
+		// 4. 未出现错误，执行删除操作
+		rowsAffected, err := _article.Delete()
+		// 4.1 发生错误
+		if err != nil {
+			// 应该是 SQL 报错了
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, "500 服务器内部错误")
+		}else {
+			// 4.2 未发生错误
+			if rowsAffected > 0 {
+				// 重定向到文章列表页
+				indexURL := route.Name2URL("articles.index")
+				http.Redirect(w,r,indexURL,http.StatusFound)
+			}else {
+				// Edge case
+				w.WriteHeader(http.StatusNotFound)
+				fmt.Fprint(w, "404 文章未找到")
+			}
+		}
+	}
 }
 
 func validateArticleFormData(title string, body string) map[string]string {
