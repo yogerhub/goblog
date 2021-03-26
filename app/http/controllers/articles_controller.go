@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 	"html/template"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"unicode/utf8"
 )
@@ -65,11 +66,21 @@ func (*ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, "500 服务器错误")
 	} else {
-		tmpl, err := template.ParseFiles("resources/views/articles/index.tmpl")
-		logger.LogError(err)
+		// ---  2. 加载模板 ---
 
-		// 3. 渲染模板，将所有文章的数据传输进去
-		tmpl.Execute(w, articles)
+		// 2.0 设置模板相对路径
+		viewDir := "resources/views"
+
+		// 2.1 所有布局模板文件 Slice
+		files, err := filepath.Glob(viewDir + "/layouts/*.tmpl")
+		logger.LogError(err)
+		// 2.2 在 Slice 里新增我们的目标文件
+		newFiles := append(files, viewDir+"/articles/index.tmpl")
+		// 2.3 解析模板文件
+		tmpl, err := template.ParseFiles(newFiles...)
+		logger.LogError(err)
+		// 2.4 渲染模板，将所有文章的数据传输进去
+		tmpl.ExecuteTemplate(w, "app", articles)
 	}
 
 }
@@ -255,13 +266,13 @@ func (*ArticlesController) Delete(w http.ResponseWriter, r *http.Request) {
 			// 应该是 SQL 报错了
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprint(w, "500 服务器内部错误")
-		}else {
+		} else {
 			// 4.2 未发生错误
 			if rowsAffected > 0 {
 				// 重定向到文章列表页
 				indexURL := route.Name2URL("articles.index")
-				http.Redirect(w,r,indexURL,http.StatusFound)
-			}else {
+				http.Redirect(w, r, indexURL, http.StatusFound)
+			} else {
 				// Edge case
 				w.WriteHeader(http.StatusNotFound)
 				fmt.Fprint(w, "404 文章未找到")
