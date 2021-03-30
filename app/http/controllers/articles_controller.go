@@ -24,7 +24,7 @@ func (*ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 	id := route.GetRouteVariable("id", r)
 
 	// 2. 读取对应的文章数据
-	_article, err := article.Get(id)
+	article, err := article.Get(id)
 
 	// 3. 如果出现错误
 	if err != nil {
@@ -40,12 +40,8 @@ func (*ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// 4. 读取成功，显示文章
-		view.Render(w, view.D{
-			"Title":   _article.Title,
-			"Body":    _article.Body,
-			"Article": _article,
-			"Errors":  nil,
-		}, "articles.show", "articles._form_field")
+		view.Render(w, article, "articles.show")
+
 
 	}
 }
@@ -63,7 +59,7 @@ func (*ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "500 服务器错误")
 	} else {
 		// ---  2. 加载模板 ---
-		view.Render(w, articles, "articles.index", "articles._form_field")
+		view.Render(w, articles, "articles.index")
 
 	}
 
