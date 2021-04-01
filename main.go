@@ -1,26 +1,23 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
 	"goblog/app/http/middlewares"
 	"goblog/bootstrap"
+	"goblog/config"
+	c "goblog/pkg/config"
 	"net/http"
 )
 
-var router  *mux.Router
-var db *sql.DB
+
+func init() {
+	// 初始化配置信息
+	config.Initialize()
+}
 
 func main() {
 	bootstrap.SetupDB()
-	router = bootstrap.SetupRoute()
-
-	homeURL, _ := router.Get("home").URL()
-	fmt.Println("homeURL:", homeURL)
-	articleURL, _ := router.Get("articles.show").URL("id", "1")
-	fmt.Println("articleURL:", articleURL)
-
+	router := bootstrap.SetupRoute()
 	http.ListenAndServe(":3000", middlewares.RemoveTrailingSlash(router))
+	http.ListenAndServe(":"+c.GetString("app.port"), middlewares.RemoveTrailingSlash(router))
+
 }
