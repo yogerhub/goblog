@@ -3,6 +3,7 @@ package article
 import (
 	"goblog/app/models"
 	"goblog/app/models/user"
+	"goblog/pkg/model"
 	"goblog/pkg/route"
 	"strconv"
 )
@@ -24,4 +25,13 @@ func (a Article) Link() string {
 // CreatedAtDate 创建日期
 func (a Article) CreatedAtDate() string {
 	return a.CreatedAt.Format("2006-01-02")
+}
+
+// GetByUserID 获取全部文章
+func GetByUserID(uid string) ([]Article, error) {
+	var articles []Article
+	if err := model.DB.Where("user_id = ?", uid).Preload("User").Find(&articles).Error; err != nil {
+		return articles, err
+	}
+	return articles, nil
 }
