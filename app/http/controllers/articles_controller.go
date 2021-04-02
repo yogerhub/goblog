@@ -19,6 +19,7 @@ type ArticlesController struct {
 // Show 文章详情页面
 func (ac *ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 	// 1. 获取 URL 参数
+
 	id := route.GetRouteVariable("id", r)
 
 	// 2. 读取对应的文章数据
@@ -41,7 +42,7 @@ func (ac *ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 func (ac *ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 
 	//获取结果集
-	articles, err := article.GetAll()
+	articles, pagerData, err := article.GetAll(r, 10)
 
 	if err != nil {
 		ac.ResponseForSQLError(w, err)
@@ -49,6 +50,7 @@ func (ac *ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 		// ---  2. 加载模板 ---
 		view.Render(w, view.D{
 			"Articles": articles,
+			"PagerData": pagerData,
 		}, "articles.index", "articles._article_meta")
 
 	}
