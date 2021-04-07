@@ -242,6 +242,9 @@ func (p Pagination) TotalPage() int {
 // GetPageFromRequest 从 URL 中获取 page 参数
 func (p Pagination) GetPageFromRequest(r *http.Request) int {
 	page := r.URL.Query().Get(config.GetString("pagination.url_query"))
+	if page == "" {
+		return 1
+	}
 	pageInt := types.StringToInt(page)
 	if pageInt <= 0 {
 		return 1
