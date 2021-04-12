@@ -7,6 +7,7 @@ import (
 	"goblog/app/requests"
 	"goblog/pkg/auth"
 	"goblog/pkg/route"
+	"goblog/pkg/types"
 	"goblog/pkg/view"
 	"net/http"
 )
@@ -71,6 +72,7 @@ func (*ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
 		Title: r.PostFormValue("title"),
 		Body:  r.PostFormValue("body"),
 		UserID: currentUser.ID,
+		CategoryID: types.StringToUint64(r.PostFormValue("category_id")),
 	}
 
 	errors := requests.ValidateArticleForm(_article)
@@ -137,6 +139,7 @@ func (ac *ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
 			// 4.1 表单验证
 			_article.Title = r.PostFormValue("title")
 			_article.Body = r.PostFormValue("body")
+			_article.CategoryID = types.StringToUint64(r.PostFormValue("category_id"))
 
 			errors := requests.ValidateArticleForm(_article)
 

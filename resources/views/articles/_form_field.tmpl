@@ -1,8 +1,8 @@
-
 {{define "form-fields"}}
     <div class="form-group mt-3">
         <label for="title">标题</label>
-        <input type="text" class="form-control {{if .Errors.title }}is-invalid {{end}}" name="title" value="{{ .Article.Title }}" required>
+        <input type="text" class="form-control {{if .Errors.title }}is-invalid {{end}}" name="title"
+               value="{{ .Article.Title }}" required>
         {{ with .Errors.title }}
             <div class="invalid-feedback">
                 {{ . }}
@@ -11,8 +11,19 @@
     </div>
 
     <div class="form-group mt-3">
+        <label for="category_id">分类</label>
+        <select class="form-control" name="category_id">
+            {{ range .Categories }}
+                <option value="{{ .ID }}" {{if eq .ID $.Article.CategoryID }} selected {{end}}>{{ .Name }}</option>
+            {{end}}
+        </select>
+
+    </div>
+
+    <div class="form-group mt-3">
         <label for="body">内容</label>
-        <textarea name="body" cols="30" rows="10" class="form-control {{if .Errors.body }}is-invalid {{end}}">{{ .Article.Body }}</textarea>
+        <textarea name="body" cols="30" rows="10"
+                  class="form-control {{if .Errors.body }}is-invalid {{end}}">{{ .Article.Body }}</textarea>
         {{ with .Errors.body }}
             <div class="invalid-feedback">
                 {{ . }}
