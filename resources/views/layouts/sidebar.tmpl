@@ -9,9 +9,17 @@
             <h5>分类</h5>
             <ol class="list-unstyled mb-0">
                 {{ range $key, $category := .Categories }}
-                    <li><a href="{{ $category.Link }}">{{ $category.Name }}</a></li>
+                    <li>
+                        <a href="{{ $category.Link }}">{{ $category.Name }}</a>
+                        {{ if $.isLogined }}
+                            <a class="button" href="{{ RouteName2URL "categories.edit" "id" .GetStringID }}">编辑</a>
+                        {{ end }}
+                    </li>
                 {{ end }}
-                <li><a href="{{ RouteName2URL "categories.create" }}">+ 新建分类</a></li>
+                {{ if .isLogined }}
+
+                    <li><a href="{{ RouteName2URL "categories.create" }}">+ 新建分类</a></li>
+                {{ end }}
             </ol>
         </div>
 
