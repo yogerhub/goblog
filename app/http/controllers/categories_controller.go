@@ -71,3 +71,53 @@ func (cc *CategoriesController) Show(w http.ResponseWriter, r *http.Request) {
 		}, "articles.index", "articles._article_meta")
 	}
 }
+
+// Edit 编辑分类
+func (cc *CategoriesController) Edit(w http.ResponseWriter, r *http.Request) {
+	//获取URL参数
+	id := route.GetRouteVariable("id",r)
+	//读取对应的数据
+	_category,err := category.Get(id)
+	if err != nil {
+		cc.ResponseForSQLError(w,err)
+	}else {
+		view.Render(w,view.D{
+			"Category":_category,
+		},"categories.edit")
+	}
+}
+
+//Update 更新分类
+func (cc *CategoriesController) Update(w http.ResponseWriter,r *http.Request)  {
+	//获取URL参数
+	id := route.GetRouteVariable("id",r)
+	//读取对应的数据
+	_category,err := category.Get(id)
+	if err != nil {
+		cc.ResponseForSQLError(w,err)
+	}else {
+		_category.Name = r.PostFormValue("name")
+		errors := requests.ValidateCategoryForm(_category)
+		if len(errors) == 0 {
+			rowsAffected, err := _category.Update()
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprint(w, "500 服务器内部错误")
+				return
+			}
+			// √ 更新成功，跳转到文章分类页
+			if rowsAffected > 0 {
+				showURL := route.Name2URL("categories.show", "id", id)
+				http.Redirect(w, r, showURL, http.StatusFound)
+			} else {
+				fmt.Fprint(w, "您没有做任何更改")
+			}
+		}else {
+			view.Render(w,view.D{
+				"Category":_category,
+				"Errors":errors,
+			},"categories.edit")
+		}
+
+	}
+}
