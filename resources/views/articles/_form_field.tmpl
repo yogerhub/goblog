@@ -14,7 +14,7 @@
         <label for="category_id">分类</label>
         <select class="form-control" name="category_id">
             {{ range .Categories }}
-                <option value="{{ .ID }}" {{if eq .ID $.Article.CategoryID }} selected {{end}}>{{ .Name }}</option>
+                <option value="{{ .ID }}" {{if $.Article }} {{with eq .ID  $.Article.CategoryID }}  selected {{end}} {{end}}>{{ .Name }}</option>
             {{end}}
         </select>
 
