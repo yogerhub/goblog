@@ -12,7 +12,7 @@ import (
 	"net/http"
 )
 
-// PagesController 处理静态页面
+// ArticlesController PagesController 处理静态页面
 type ArticlesController struct {
 	BaseController
 }

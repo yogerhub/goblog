@@ -21,6 +21,18 @@ func Get(idstr string) (Article, error) {
 
 }
 
+func All() ([]Article, error) {
+
+	// 获取数据
+	var articles []Article
+
+	if err := model.DB.Find(&articles).Error; err != nil {
+		return articles, err
+	}
+	return articles, nil
+
+}
+
 // GetAll 获取全部文章
 func GetAll(r *http.Request, perPage int) ([]Article, pagination.ViewData, error) {
 
